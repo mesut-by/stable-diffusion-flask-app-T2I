@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Stable Diffusion Web App</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script>
+    async function generateImage(event) {
+      event.preventDefault();
+
+      const btn = document.getElementById("gen-btn");
+      const spinner = document.getElementById("spinner");
+      const result = document.getElementById("result");
+      const promptBox = document.getElementById("prompt-box");
+
+      btn.disabled = true;
+      spinner.style.display = "block";
+      result.src = "";
+      promptBox.textContent = "";
+
+      const prompt = document.getElementById("prompt").value;
+      const response = await fetch("/generate", {
+        method: "POST",
+        body: new URLSearchParams({ prompt: prompt }),
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      });
+
+      const data = await response.json();
+      result.src = data.image_url;
+      promptBox.textContent = `"${prompt}"`;
+
+      btn.disabled = false;
+      spinner.style.display = "none";
+    }
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <h1>
+      <div class="logo"></div>Stable Diffusion Web App
+    </h1>
+
+    <!-- Device Info -->
+    <p style="font-size:14px; color:#cbd5e1; margin-bottom:15px;">
+      Running on: <strong>{{ device.upper() }}</strong>
+    </p>
+
+    <form onsubmit="generateImage(event)">
+      <input type="text" id="prompt" name="prompt" placeholder="Enter your prompt" required>
+      <button type="submit" id="gen-btn">Generate</button>
+    </form>
+
+    <div id="spinner"></div>
+
+    <img id="result">
+    <div id="prompt-box"></div>
+  </div>
+</body>
+
+</html>
